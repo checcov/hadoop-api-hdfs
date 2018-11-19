@@ -162,7 +162,9 @@ public class HDFSClientDemo {
 			IOUtils.copyBytes(fileInputStream, fSDataOutputStream, configuration);
 			
 			IOUtils.closeStream(fileInputStream);
+			
 			IOUtils.closeStream(fSDataOutputStream);
+			
 			fileSystem.close();
 			System.out.println(" 客户端上传文件结束,耗时：" + (System.currentTimeMillis() - start)+"  毫秒");
 		} catch (Exception e) {
@@ -190,6 +192,17 @@ public class HDFSClientDemo {
 			} catch (IOException e) {
 				logger.info("关闭流失败：{}",e);
 			}
+		}
+	}
+	/**
+	 * 文件重行名称
+	 */
+	@Test
+	public void renameFile(){
+		try {
+			this.fileSystem.rename(new Path("/testoutput/2.txt"), new Path("/testoutput/3.txt"));
+			fileSystem.close();
+		} catch (Exception e) {
 		}
 	}
 }
