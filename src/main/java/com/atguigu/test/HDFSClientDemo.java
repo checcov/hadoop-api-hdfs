@@ -5,24 +5,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-
-import javax.ws.rs.PUT;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.logging.log4j.core.config.plugins.convert.TypeConverters.UrlConverter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sun.tools.classfile.InnerClasses_attribute.Info;
 /**
  * 
  * @author chenjiang 常见javaAPI操作HDFS相关Demo
@@ -50,6 +47,35 @@ public class HDFSClientDemo {
 			e.printStackTrace();
 		}
 	}
+	@After
+	public void closeFileSystem(){
+		try {
+			fileSystem.close();
+		} catch (IOException e) {
+			logger.info("fileSystem流关闭失败:{}",e);
+			e.printStackTrace();
+		}
+	}
+	@Test
+    public void listStatus()  {
+        try {
+			FileStatus[] fileStatuses = fileSystem.listStatus(new Path("/"));
+			for (FileStatus fileStatus : fileStatuses) {
+	            if (fileStatus.isDirectory()) {
+	                logger.info(fileStatus.getPath() + " 是文件");
+	            } else {
+	                logger.info(fileStatus.getPath() + " 文件夹");
+	            }
+	        }
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+       
+    }
 	/**
 	 * 创建HDFS目录
 	 * @throws InterruptedException 
@@ -64,7 +90,6 @@ public class HDFSClientDemo {
 		}else{
 			logger.info("创建失败");
 		}
-		fileSystem.close();
 	}
 	
 	/**
@@ -78,15 +103,6 @@ public class HDFSClientDemo {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}finally{
-			if(fileSystem!=null){
-				try {
-					fileSystem.close();
-				} catch (IOException e) {
-					logger.info("关闭fileSystem流失败");
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 	/**
@@ -100,15 +116,6 @@ public class HDFSClientDemo {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}finally{
-			if(fileSystem!=null){
-				try {
-					fileSystem.close();
-				} catch (IOException e) {
-					logger.info("关闭fileSystem流失败");
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 	/**
@@ -165,7 +172,6 @@ public class HDFSClientDemo {
 			
 			IOUtils.closeStream(fSDataOutputStream);
 			
-			fileSystem.close();
 			System.out.println(" 客户端上传文件结束,耗时：" + (System.currentTimeMillis() - start)+"  毫秒");
 		} catch (Exception e) {
 			logger.info("上传失败：{}",e);
@@ -186,12 +192,7 @@ public class HDFSClientDemo {
 			}
 			System.out.println(" 客户端删除文件结束,耗时：" + (System.currentTimeMillis() - start)+"  毫秒");
 		} catch (Exception e) {
-		}finally {
-			try {
-				fileSystem.close();
-			} catch (IOException e) {
-				logger.info("关闭流失败：{}",e);
-			}
+			logger.info("删除失败：{}",e);
 		}
 	}
 	/**
@@ -201,8 +202,8 @@ public class HDFSClientDemo {
 	public void renameFile(){
 		try {
 			this.fileSystem.rename(new Path("/testoutput/2.txt"), new Path("/testoutput/3.txt"));
-			fileSystem.close();
 		} catch (Exception e) {
+			logger.info("文件重行名称失败:{}",e);
 		}
 	}
 }
